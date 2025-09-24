@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #define VIRTUAL_WIDTH 800
 #define VIRTUAL_HEIGHT 450
@@ -51,6 +52,10 @@ int main(void) {
   InitWindow(1920, 1080, "Tradebinder");
   SetTargetFPS(60);
 
+  GameState game_state = {
+      .faceup_tile_count = 0,
+  };
+
   Entity tiles[4];
   int tiles_length = 4;
   for (int i = 0; i < tiles_length; i++) {
@@ -86,14 +91,24 @@ int main(void) {
     // ---------------- //
     // ---- Update ---- //
     // ---------------- //
+    if (game_state.faceup_tile_count == 2) {
+      sleep(1);
+      for (int i = 0; i < tiles_length; i++) {
+        Entity *tile = &tiles[i];
+        tile->is_face_up = false;
+        game_state.faceup_tile_count = 0;
+      }
+    }
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
       for (int i = 0; i < tiles_length; i++) {
         Entity *tile = &tiles[i];
         Vector2 mouse_pos = GetMousePosition();
         Rectangle rect = {tile->pos.x * scale, tile->pos.y * scale,
                           tile->width * scale, tile->height * scale};
-        if (CheckCollisionPointRec(mouse_pos, rect)) {
+        if (CheckCollisionPointRec(mouse_pos, rect) && !tile->is_face_up) {
           tile->is_face_up = true;
+          game_state.faceup_tile_count++;
         }
       }
     };
