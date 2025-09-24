@@ -12,7 +12,7 @@
 #define TILE_WIDTH 85
 #define TILE_HEIGHT 100
 
-bool DEBUG = 0;
+bool DEBUG = 1;
 
 void test(char *text) {
   DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
@@ -61,22 +61,23 @@ int main(void) {
 
   Entity tiles[8];
   int tiles_length = 8;
-  int cols = 4;
-  int tile_gap = 25;
-  int start_x = TILE_WIDTH * 2;
-  int start_y = VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT;
-
   for (int i = 0; i < tiles_length; i++) {
-    int col = i % cols;
-    int row = i / cols;
+    int tile_gap = 25;
+    tiles[i] = (Entity){
+        .pos =
+            (Vector2){.x = (10 + i * (TILE_WIDTH + tile_gap)) + TILE_WIDTH * 2,
+                      .y = (float)VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT},
+        .width = TILE_WIDTH,
+        .height = TILE_HEIGHT,
+        .state = FaceDown};
 
-    tiles[i] = (Entity){.pos = {.x = start_x + col * (TILE_WIDTH + tile_gap),
-                                .y = start_y + row * (TILE_HEIGHT + tile_gap)},
-                        .width = TILE_WIDTH,
-                        .height = TILE_HEIGHT,
-                        .state = FaceDown};
+    if (tiles[i].pos.x > (VIRTUAL_WIDTH / 3.0f) * 2) {
+      tiles[i].pos.y += 100;
+    }
 
-    snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", i % 2);
+    int err = snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d",
+                       (i % 2));
+    assert(err);
   }
 
   while (!WindowShouldClose()) {
