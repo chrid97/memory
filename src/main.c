@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #define VIRTUAL_WIDTH 800
@@ -17,7 +18,7 @@ void test(char *text) {
 
 void draw_tile(Entity *tile, float scale) {
   const char *text;
-  if (tile->is_face_up) {
+  if (tile->state == FaceUp || tile->state == Scored) {
     text = tile->tile_value;
   } else {
     text = "?";
@@ -29,7 +30,7 @@ void draw_tile(Entity *tile, float scale) {
   float rect_center_y = tile->pos.y + tile->height / 2.0f;
   float textX = rect_center_x - text_width / 2.0f;
   float textY = rect_center_y - text_height / 2.0f;
-  if (tile->is_face_up) {
+  if (tile->state == FaceUp || tile->state == Scored) {
     DrawRectangle(tile->pos.x * scale, tile->pos.y * scale, tile->width * scale,
                   tile->height * scale, WHITE);
     DrawText(text, textX * scale, textY * scale, font_size * scale, ORANGE);
@@ -52,9 +53,9 @@ int main(void) {
   InitWindow(1920, 1080, "Tradebinder");
   SetTargetFPS(60);
 
-  GameState game_state = {
-      .faceup_tile_count = 0,
-  };
+  GameState game_state = {.faceup_tile_count = 0,
+                          .prev_flipped_tile_index = 103,
+                          .current_flipped_tile_index = 103};
 
   Entity tiles[4];
   int tiles_length = 4;
@@ -66,8 +67,7 @@ int main(void) {
                       .y = (float)VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT},
         .width = TILE_WIDTH,
         .height = TILE_HEIGHT,
-        .is_face_up = false,
-    };
+        .state = FaceDown};
 
     int err = snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d",
                        (i % 2));
@@ -93,11 +93,25 @@ int main(void) {
     // ---------------- //
     if (game_state.faceup_tile_count == 2) {
       sleep(1);
-      for (int i = 0; i < tiles_length; i++) {
-        Entity *tile = &tiles[i];
-        tile->is_face_up = false;
-        game_state.faceup_tile_count = 0;
+      // for (int i = 0; i < tiles_length; i++) {
+      //   Entity *tile = &tiles[i];
+      //   tile->state = FaceDown;
+      // }
+
+      char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
+      char *current_tile =
+          tiles[game_state.current_flipped_tile_index].tile_value;
+      if (strcmp(prev_tile, current_tile) == 0) {
+        tiles[game_state.prev_flipped_tile_index].state = Scored;
+        tiles[game_state.current_flipped_tile_index].state = Scored;
+        game_state.score++;
+      } else {
+        tiles[game_state.prev_flipped_tile_index].state = FaceDown;
+        tiles[game_state.current_flipped_tile_index].state = FaceDown;
       }
+      game_state.prev_flipped_tile_index = 103;
+      game_state.current_flipped_tile_index = 103;
+      game_state.faceup_tile_count = 0;
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -106,9 +120,16 @@ int main(void) {
         Vector2 mouse_pos = GetMousePosition();
         Rectangle rect = {tile->pos.x * scale, tile->pos.y * scale,
                           tile->width * scale, tile->height * scale};
-        if (CheckCollisionPointRec(mouse_pos, rect) && !tile->is_face_up) {
-          tile->is_face_up = true;
+        if (CheckCollisionPointRec(mouse_pos, rect) &&
+            tile->state == FaceDown) {
+          tile->state = FaceUp;
           game_state.faceup_tile_count++;
+
+          if (game_state.prev_flipped_tile_index == 103) {
+            game_state.prev_flipped_tile_index = i;
+          } else {
+            game_state.current_flipped_tile_index = i;
+          }
         }
       }
     };
@@ -122,6 +143,19 @@ int main(void) {
     for (int i = 0; i < tiles_length; i++) {
       draw_tile(&tiles[i], scale);
     }
+
+    int font_size = 25 * scale;
+    const char *score = TextFormat("Score: %i", game_state.score);
+    DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
+    const char *faceup_tile_count =
+        TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
+    DrawText(faceup_tile_count, 20 * scale, 40 * scale, font_size, YELLOW);
+    const char *prev =
+        TextFormat("Prev: %i", game_state.prev_flipped_tile_index);
+    DrawText(prev, 20 * scale, 60 * scale, font_size, YELLOW);
+    const char *current =
+        TextFormat("Curr: %i", game_state.current_flipped_tile_index);
+    DrawText(current, 20 * scale, 80 * scale, font_size, YELLOW);
 
     EndDrawing();
   }
