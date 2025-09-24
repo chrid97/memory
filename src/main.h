@@ -10,4 +10,5 @@ typedef struct {
   Vector2 pos;
   int card_value;
   bool is_face_up;
+  char tile_value[32];
 } Entity;

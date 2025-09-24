@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define VIRTUAL_WIDTH 800
 #define VIRTUAL_HEIGHT 450
@@ -16,7 +17,7 @@ void test(char *text) {
 void draw_tile(Entity *tile, float scale) {
   const char *text;
   if (tile->is_face_up) {
-    text = "1";
+    text = tile->tile_value;
   } else {
     text = "?";
   }
@@ -62,6 +63,10 @@ int main(void) {
         .height = TILE_HEIGHT,
         .is_face_up = false,
     };
+
+    int err = snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d",
+                       (i % 2));
+    assert(err);
   }
 
   while (!WindowShouldClose()) {
