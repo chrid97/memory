@@ -12,6 +12,8 @@
 #define TILE_WIDTH 85
 #define TILE_HEIGHT 100
 
+bool DEBUG = 1;
+
 void test(char *text) {
   DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
 }
@@ -57,8 +59,8 @@ int main(void) {
                           .prev_flipped_tile_index = 103,
                           .current_flipped_tile_index = 103};
 
-  Entity tiles[4];
-  int tiles_length = 4;
+  Entity tiles[8];
+  int tiles_length = 8;
   for (int i = 0; i < tiles_length; i++) {
     int tile_gap = 25;
     tiles[i] = (Entity){
@@ -87,6 +89,9 @@ int main(void) {
     // --------------- //
     // ---- Input ---- //
     // --------------- //
+    if (IsKeyPressed(KEY_O)) {
+      DEBUG = !DEBUG;
+    }
 
     // ---------------- //
     // ---- Update ---- //
@@ -144,18 +149,21 @@ int main(void) {
       draw_tile(&tiles[i], scale);
     }
 
-    int font_size = 25 * scale;
-    const char *score = TextFormat("Score: %i", game_state.score);
-    DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
-    const char *faceup_tile_count =
-        TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
-    DrawText(faceup_tile_count, 20 * scale, 40 * scale, font_size, YELLOW);
-    const char *prev =
-        TextFormat("Prev: %i", game_state.prev_flipped_tile_index);
-    DrawText(prev, 20 * scale, 60 * scale, font_size, YELLOW);
-    const char *current =
-        TextFormat("Curr: %i", game_state.current_flipped_tile_index);
-    DrawText(current, 20 * scale, 80 * scale, font_size, YELLOW);
+    // DEBUG //
+    if (DEBUG) {
+      int font_size = 25 * scale;
+      const char *score = TextFormat("Score: %i", game_state.score);
+      DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
+      const char *faceup_tile_count =
+          TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
+      DrawText(faceup_tile_count, 20 * scale, 40 * scale, font_size, YELLOW);
+      const char *prev =
+          TextFormat("Prev: %i", game_state.prev_flipped_tile_index);
+      DrawText(prev, 20 * scale, 60 * scale, font_size, YELLOW);
+      const char *current =
+          TextFormat("Curr: %i", game_state.current_flipped_tile_index);
+      DrawText(current, 20 * scale, 80 * scale, font_size, YELLOW);
+    }
 
     EndDrawing();
   }
