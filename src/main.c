@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #define VIRTUAL_WIDTH 800
@@ -17,6 +19,8 @@ bool DEBUG = 0;
 void test(char *text) {
   DrawText(text, GetScreenWidth() / 2, GetScreenHeight() / 2, 100, RED);
 }
+
+int random_between(int min, int max) { return min + rand() % (max - min + 1); }
 
 void draw_tile(Entity *tile, float scale) {
   const char *text;
@@ -77,6 +81,29 @@ int main(void) {
                         .state = FaceDown};
 
     snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", i % 2);
+  }
+
+  int pairs = tiles_length / 2;
+  int values[tiles_length];
+
+  // fill with pairs
+  for (int i = 0; i < pairs; i++) {
+    values[2 * i] = i;
+    values[2 * i + 1] = i;
+  }
+
+  // shuffle
+  srand(time(NULL));
+  for (int i = tiles_length - 1; i > 0; i--) {
+    int j = rand() % (i + 1);
+    int tmp = values[i];
+    values[i] = values[j];
+    values[j] = tmp;
+  }
+
+  // assign to tiles
+  for (int i = 0; i < tiles_length; i++) {
+    snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", values[i]);
   }
 
   while (!WindowShouldClose()) {
