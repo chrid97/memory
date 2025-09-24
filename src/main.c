@@ -55,7 +55,9 @@ int main(void) {
   for (int i = 0; i < tiles_length; i++) {
     int tile_gap = 25;
     tiles[i] = (Entity){
-        .pos = (Vector2){.x = 10 + i * (TILE_WIDTH + tile_gap), .y = 25},
+        .pos =
+            (Vector2){.x = (10 + i * (TILE_WIDTH + tile_gap)) + TILE_WIDTH * 2,
+                      .y = (float)VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT},
         .width = TILE_WIDTH,
         .height = TILE_HEIGHT,
         .is_face_up = false,
