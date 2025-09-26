@@ -56,7 +56,7 @@ void draw_tile(Entity *tile, float scale) {
 }
 
 int main(void) {
-  InitWindow(1920, 1080, "Tradebinder");
+  InitWindow(1440, 1200, "Tradebinder");
   SetTargetFPS(60);
 
   GameState game_state = {.faceup_tile_count = 0,
@@ -180,10 +180,10 @@ int main(void) {
     }
 
     // DEBUG //
+    int font_size = 25 * scale;
+    const char *score = TextFormat("Score: %i", game_state.score);
+    DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
     if (DEBUG) {
-      int font_size = 25 * scale;
-      const char *score = TextFormat("Score: %i", game_state.score);
-      DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
       const char *faceup_tile_count =
           TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
       DrawText(faceup_tile_count, 20 * scale, 40 * scale, font_size, YELLOW);
