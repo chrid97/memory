@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define MAX_TILES 100
+
 typedef enum { FaceDown, FaceUp, Scored } TileState;
 
 typedef struct {
@@ -18,4 +20,7 @@ typedef struct {
   int prev_flipped_tile_index;
   int current_flipped_tile_index;
   int score;
+  int level;
+  Entity tiles[MAX_TILES];
+  int tiles_count;
 } GameState;

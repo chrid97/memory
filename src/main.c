@@ -55,22 +55,13 @@ void draw_tile(Entity *tile, float scale) {
       3, ORANGE);
 }
 
-int main(void) {
-  InitWindow(1440, 1200, "Tradebinder");
-  SetTargetFPS(60);
-
-  GameState game_state = {.faceup_tile_count = 0,
-                          .prev_flipped_tile_index = 103,
-                          .current_flipped_tile_index = 103};
-
-  Entity tiles[8];
-  int tiles_length = 8;
+void update_level(Entity tiles[], int tiles_count) {
   int cols = 4;
   int tile_gap = 25;
   int start_x = TILE_WIDTH * 2;
   int start_y = VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT;
 
-  for (int i = 0; i < tiles_length; i++) {
+  for (int i = 0; i < tiles_count; i++) {
     int col = i % cols;
     int row = i / cols;
 
@@ -83,8 +74,8 @@ int main(void) {
     snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", i % 2);
   }
 
-  int pairs = tiles_length / 2;
-  int values[tiles_length];
+  int pairs = tiles_count / 2;
+  int values[tiles_count];
 
   // fill with pairs
   for (int i = 0; i < pairs; i++) {
@@ -94,7 +85,7 @@ int main(void) {
 
   // shuffle
   srand(time(NULL));
-  for (int i = tiles_length - 1; i > 0; i--) {
+  for (int i = tiles_count - 1; i > 0; i--) {
     int j = rand() % (i + 1);
     int tmp = values[i];
     values[i] = values[j];
@@ -102,9 +93,23 @@ int main(void) {
   }
 
   // assign to tiles
-  for (int i = 0; i < tiles_length; i++) {
+  for (int i = 0; i < tiles_count; i++) {
     snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", values[i]);
   }
+}
+
+int main(void) {
+  InitWindow(1440, 1200, "Memory");
+  SetTargetFPS(60);
+
+  GameState game_state = {.faceup_tile_count = 0,
+                          .prev_flipped_tile_index = 103,
+                          .current_flipped_tile_index = 103,
+                          .level = 1};
+
+  Entity tiles[8];
+  int tiles_count = 2 * game_state.level;
+  update_level(tiles, tiles_count);
 
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
@@ -127,8 +132,10 @@ int main(void) {
     // ---- Update ---- //
     // ---------------- //
     if (game_state.faceup_tile_count == 2) {
+      // (NOTE) this sleeps stop me fromw closing the program, is there another
+      // way to delay player action?
       sleep(1);
-      // for (int i = 0; i < tiles_length; i++) {
+      // for (int i = 0; i < tiles_count; i++) {
       //   Entity *tile = &tiles[i];
       //   tile->state = FaceDown;
       // }
@@ -150,7 +157,7 @@ int main(void) {
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      for (int i = 0; i < tiles_length; i++) {
+      for (int i = 0; i < tiles_count; i++) {
         Entity *tile = &tiles[i];
         Vector2 mouse_pos = GetMousePosition();
         Rectangle rect = {tile->pos.x * scale, tile->pos.y * scale,
@@ -169,13 +176,27 @@ int main(void) {
       }
     };
 
+    bool all_tiles_scored = true;
+    for (int i = 0; i < tiles_count; i++) {
+      if (tiles[i].state != Scored) {
+        all_tiles_scored = false;
+        break;
+      }
+    }
+
+    if (all_tiles_scored) {
+      game_state.level++;
+      update_level(tiles, tiles_count);
+      all_tiles_scored = false;
+    }
+
     // ---------------- //
     // ----- Draw ----- //
     // ---------------- //
     BeginDrawing();
     ClearBackground(DARKBLUE);
 
-    for (int i = 0; i < tiles_length; i++) {
+    for (int i = 0; i < tiles_count; i++) {
       draw_tile(&tiles[i], scale);
     }
 
@@ -183,6 +204,8 @@ int main(void) {
     int font_size = 25 * scale;
     const char *score = TextFormat("Score: %i", game_state.score);
     DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
+    const char *level = TextFormat("Level: %i", game_state.level);
+    DrawText(level, 20 * scale, 20 * scale, font_size, YELLOW);
     if (DEBUG) {
       const char *faceup_tile_count =
           TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
