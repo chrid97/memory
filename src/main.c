@@ -107,7 +107,7 @@ int main(void) {
                           .current_flipped_tile_index = 103,
                           .level = 1};
 
-  Entity tiles[8];
+  Entity tiles[MAX_TILES];
   int tiles_count = 2 * game_state.level;
   update_level(tiles, tiles_count);
 
@@ -186,6 +186,7 @@ int main(void) {
 
     if (all_tiles_scored) {
       game_state.level++;
+      tiles_count = 2 * game_state.level;
       update_level(tiles, tiles_count);
       all_tiles_scored = false;
     }
