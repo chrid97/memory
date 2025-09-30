@@ -13,6 +13,7 @@
 #define VIRTUAL_HEIGHT 450
 #define TILE_WIDTH 85
 #define TILE_HEIGHT 100
+#define DEFAULT_PLAYER_HEALTH 5
 
 bool DEBUG = 0;
 
@@ -108,8 +109,10 @@ int main(void) {
                           .prev_flipped_tile_index = 103,
                           .current_flipped_tile_index = 103,
                           .level = 1,
-                          .player_health = 5};
+                          .player_health = DEFAULT_PLAYER_HEALTH,
+                          .state = PLAYING};
 
+  // (TODO) Move this into game_state
   Entity tiles[MAX_TILES];
   int tiles_count = 2 * game_state.level;
   update_level(tiles, tiles_count);
@@ -161,6 +164,19 @@ int main(void) {
       game_state.prev_flipped_tile_index = 103;
       game_state.current_flipped_tile_index = 103;
       game_state.faceup_tile_count = 0;
+    }
+
+    if (game_state.player_health == 0) {
+      game_state.state = GAME_OVER;
+    }
+
+    if (game_state.state == GAME_OVER) {
+      // RESET THE GAME
+      game_state.player_health = DEFAULT_PLAYER_HEALTH;
+      game_state.level = 1;
+      tiles_count = 2 * game_state.level;
+      game_state.state = PLAYING;
+      update_level(tiles, tiles_count);
     }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
