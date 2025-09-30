@@ -23,4 +23,5 @@ typedef struct {
   int level;
   Entity tiles[MAX_TILES];
   int tiles_count;
+  int player_health;
 } GameState;

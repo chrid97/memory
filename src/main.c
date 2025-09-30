@@ -36,6 +36,8 @@ void draw_tile(Entity *tile, float scale) {
   float rect_center_y = tile->pos.y + tile->height / 2.0f;
   float textX = rect_center_x - text_width / 2.0f;
   float textY = rect_center_y - text_height / 2.0f;
+  // A Scored card is a faceup card, i should probably chagne faceup to
+  // something else
   if (tile->state == FaceUp || tile->state == Scored) {
     DrawRectangle(tile->pos.x * scale, tile->pos.y * scale, tile->width * scale,
                   tile->height * scale, WHITE);
@@ -105,7 +107,8 @@ int main(void) {
   GameState game_state = {.faceup_tile_count = 0,
                           .prev_flipped_tile_index = 103,
                           .current_flipped_tile_index = 103,
-                          .level = 1};
+                          .level = 1,
+                          .player_health = 5};
 
   Entity tiles[MAX_TILES];
   int tiles_count = 2 * game_state.level;
@@ -134,7 +137,10 @@ int main(void) {
     if (game_state.faceup_tile_count == 2) {
       // (NOTE) this sleeps stop me fromw closing the program, is there another
       // way to delay player action?
-      sleep(1);
+      struct timespec ts;
+      ts.tv_sec = 0;
+      ts.tv_nsec = 500 * 1000000; // 500 ms
+      nanosleep(&ts, NULL);
       // for (int i = 0; i < tiles_count; i++) {
       //   Entity *tile = &tiles[i];
       //   tile->state = FaceDown;
@@ -150,6 +156,7 @@ int main(void) {
       } else {
         tiles[game_state.prev_flipped_tile_index].state = FaceDown;
         tiles[game_state.current_flipped_tile_index].state = FaceDown;
+        game_state.player_health--;
       }
       game_state.prev_flipped_tile_index = 103;
       game_state.current_flipped_tile_index = 103;
@@ -201,10 +208,17 @@ int main(void) {
       draw_tile(&tiles[i], scale);
     }
 
+    int health_container_width = 15 * scale;
+    int health_container_height = 15 * scale;
+    for (int i = 0; i < game_state.player_health; i++) {
+      DrawRectangle((300 + health_container_width * i) * scale, 10 * scale,
+                    health_container_width, health_container_width, RED);
+    }
+
     // DEBUG //
     int font_size = 25 * scale;
     const char *score = TextFormat("Score: %i", game_state.score);
-    DrawText(score, 20 * scale, 0 * scale, font_size, YELLOW);
+    DrawText(score, 20 * scale, scale, font_size, YELLOW);
     const char *level = TextFormat("Level: %i", game_state.level);
     DrawText(level, 20 * scale, 20 * scale, font_size, YELLOW);
     if (DEBUG) {

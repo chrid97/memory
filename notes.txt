@@ -1,1 +1,7 @@
+Add shields that regenerate each round
+- then the shield can be used a resource to gather information on face down cards. You can take some damage since you'll just get them back
+
+maybe this shouldn't be a memory game but an exploration game. Each facedown tile is an unknown location. Then the goal as the player is to reveal enough of the map 
+to achieve something, Getting out? killing an enemy? i dunno
+
 Maybe you're fighting an enemy you flip cards to do things and the facedown cards are cards in your deck.
