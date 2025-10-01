@@ -5,3 +5,5 @@ maybe this shouldn't be a memory game but an exploration game. Each facedown til
 to achieve something, Getting out? killing an enemy? i dunno
 
 Maybe you're fighting an enemy you flip cards to do things and the facedown cards are cards in your deck.
+
+maybe its a deckbuilder. You draw cards that effect the board. and maybe some of the tiles you flip affects your hand. Like you can flip a card that draws you a card

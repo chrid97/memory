@@ -117,6 +117,9 @@ int main(void) {
   int tiles_count = 2 * game_state.level;
   update_level(tiles, tiles_count);
 
+  float flip_timer_secs = -0.0f;
+  bool is_timer_on = false;
+  bool timer_completed = false;
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
     // Screen scaling
@@ -137,33 +140,41 @@ int main(void) {
     // ---------------- //
     // ---- Update ---- //
     // ---------------- //
-    if (game_state.faceup_tile_count == 2) {
-      // (NOTE) this sleeps stop me fromw closing the program, is there another
-      // way to delay player action?
-      struct timespec ts;
-      ts.tv_sec = 0;
-      ts.tv_nsec = 500 * 1000000; // 500 ms
-      nanosleep(&ts, NULL);
-      // for (int i = 0; i < tiles_count; i++) {
-      //   Entity *tile = &tiles[i];
-      //   tile->state = FaceDown;
-      // }
 
-      char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
-      char *current_tile =
-          tiles[game_state.current_flipped_tile_index].tile_value;
-      if (strcmp(prev_tile, current_tile) == 0) {
-        tiles[game_state.prev_flipped_tile_index].state = Scored;
-        tiles[game_state.current_flipped_tile_index].state = Scored;
-        game_state.score++;
-      } else {
-        tiles[game_state.prev_flipped_tile_index].state = FaceDown;
-        tiles[game_state.current_flipped_tile_index].state = FaceDown;
-        game_state.player_health--;
+    if (is_timer_on) {
+      flip_timer_secs -= dt;
+      if (flip_timer_secs <= 0) {
+        is_timer_on = false;
+        flip_timer_secs = 0;
+        timer_completed = true;
       }
-      game_state.prev_flipped_tile_index = 103;
-      game_state.current_flipped_tile_index = 103;
-      game_state.faceup_tile_count = 0;
+    }
+
+    if (!is_timer_on) {
+      printf("%f\n", flip_timer_secs);
+      flip_timer_secs = 2;
+    }
+
+    if (game_state.faceup_tile_count == 2) {
+      is_timer_on = true;
+      if (timer_completed) {
+        timer_completed = false;
+        char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
+        char *current_tile =
+            tiles[game_state.current_flipped_tile_index].tile_value;
+        if (strcmp(prev_tile, current_tile) == 0) {
+          tiles[game_state.prev_flipped_tile_index].state = Scored;
+          tiles[game_state.current_flipped_tile_index].state = Scored;
+          game_state.score++;
+        } else {
+          tiles[game_state.prev_flipped_tile_index].state = FaceDown;
+          tiles[game_state.current_flipped_tile_index].state = FaceDown;
+          game_state.player_health--;
+        }
+        game_state.prev_flipped_tile_index = 103;
+        game_state.current_flipped_tile_index = 103;
+        game_state.faceup_tile_count = 0;
+      }
     }
 
     if (game_state.player_health == 0) {
@@ -176,6 +187,7 @@ int main(void) {
       game_state.level = 1;
       tiles_count = 2 * game_state.level;
       game_state.state = PLAYING;
+      game_state.score = 0;
       update_level(tiles, tiles_count);
     }
 
