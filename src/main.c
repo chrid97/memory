@@ -114,11 +114,6 @@ int main(void) {
   // (TODO) Move this into game_state
   Entity tiles[MAX_TILES];
   int tiles_count = 9;
-  // update_level(tiles, tiles_count);
-
-  // tile grid
-  // width, height for tile container
-  // tile gap
 
   int grid_width = VIRTUAL_WIDTH / 2;
   int grid_height = 375;
@@ -132,16 +127,12 @@ int main(void) {
   int column_length = grid_height - gap - TILE_HEIGHT;
   int rows = column_length / TILE_HEIGHT;
 
-  printf("cols %i\n", cols);
-  printf("rows %i\n", rows);
-
   for (int i = 0; i < tiles_count; i++) {
-    int row = 0;
-    int col = 0;
-    if (i % 3 == 0) {
-    }
-    tiles[i] = (Entity){.pos = {.x = grid_pos.x + ((gap + TILE_WIDTH) * i),
-                                .y = grid_pos.y + gap},
+    int row = i / cols;
+    int col = i % cols;
+
+    tiles[i] = (Entity){.pos = {.x = grid_pos.x + ((gap + TILE_WIDTH) * col),
+                                .y = grid_pos.y + ((TILE_HEIGHT + gap) * row)},
                         .width = TILE_WIDTH,
                         .height = TILE_HEIGHT,
                         .state = FaceDown};
