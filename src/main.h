@@ -17,7 +17,6 @@ typedef struct {
 } Entity;
 
 typedef struct {
-  uint8_t faceup_tile_count;
   int prev_flipped_tile_index;
   int current_flipped_tile_index;
   int score;

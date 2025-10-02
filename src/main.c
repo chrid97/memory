@@ -105,8 +105,7 @@ int main(void) {
   InitWindow(1440, 1200, "Memory");
   SetTargetFPS(60);
 
-  GameState game_state = {.faceup_tile_count = 0,
-                          .prev_flipped_tile_index = 103,
+  GameState game_state = {.prev_flipped_tile_index = 103,
                           .current_flipped_tile_index = 103,
                           .level = 1,
                           .player_health = DEFAULT_PLAYER_HEALTH,
@@ -117,9 +116,7 @@ int main(void) {
   int tiles_count = 2 * game_state.level;
   update_level(tiles, tiles_count);
 
-  float flip_timer_secs = -0.0f;
-  bool is_timer_on = false;
-  bool timer_completed = false;
+  float flip_timer = 0.0f;
   while (!WindowShouldClose()) {
     float dt = GetFrameTime();
     // Screen scaling
@@ -141,40 +138,31 @@ int main(void) {
     // ---- Update ---- //
     // ---------------- //
 
-    if (is_timer_on) {
-      flip_timer_secs -= dt;
-      if (flip_timer_secs <= 0) {
-        is_timer_on = false;
-        flip_timer_secs = 0;
-        timer_completed = true;
+    if (flip_timer > 0) {
+      flip_timer -= dt;
+      printf("%f\n", flip_timer);
+      if (flip_timer <= 0) {
+        flip_timer = 0;
       }
     }
 
-    if (!is_timer_on) {
-      printf("%f\n", flip_timer_secs);
-      flip_timer_secs = 2;
-    }
-
-    if (game_state.faceup_tile_count == 2) {
-      is_timer_on = true;
-      if (timer_completed) {
-        timer_completed = false;
-        char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
-        char *current_tile =
-            tiles[game_state.current_flipped_tile_index].tile_value;
-        if (strcmp(prev_tile, current_tile) == 0) {
-          tiles[game_state.prev_flipped_tile_index].state = Scored;
-          tiles[game_state.current_flipped_tile_index].state = Scored;
-          game_state.score++;
-        } else {
-          tiles[game_state.prev_flipped_tile_index].state = FaceDown;
-          tiles[game_state.current_flipped_tile_index].state = FaceDown;
-          game_state.player_health--;
-        }
-        game_state.prev_flipped_tile_index = 103;
-        game_state.current_flipped_tile_index = 103;
-        game_state.faceup_tile_count = 0;
+    // compare cards
+    printf("%f\n", flip_timer);
+    if (game_state.current_flipped_tile_index != 103 && flip_timer == 0) {
+      char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
+      char *current_tile =
+          tiles[game_state.current_flipped_tile_index].tile_value;
+      if (strcmp(prev_tile, current_tile) == 0) {
+        tiles[game_state.prev_flipped_tile_index].state = Scored;
+        tiles[game_state.current_flipped_tile_index].state = Scored;
+        game_state.score++;
+      } else {
+        tiles[game_state.prev_flipped_tile_index].state = FaceDown;
+        tiles[game_state.current_flipped_tile_index].state = FaceDown;
+        game_state.player_health--;
       }
+      game_state.prev_flipped_tile_index = 103;
+      game_state.current_flipped_tile_index = 103;
     }
 
     if (game_state.player_health == 0) {
@@ -191,7 +179,8 @@ int main(void) {
       update_level(tiles, tiles_count);
     }
 
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    // (TODO) Prevent clicking on a tile when you have two flip already
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && flip_timer == 0) {
       for (int i = 0; i < tiles_count; i++) {
         Entity *tile = &tiles[i];
         Vector2 mouse_pos = GetMousePosition();
@@ -200,12 +189,12 @@ int main(void) {
         if (CheckCollisionPointRec(mouse_pos, rect) &&
             tile->state == FaceDown) {
           tile->state = FaceUp;
-          game_state.faceup_tile_count++;
 
           if (game_state.prev_flipped_tile_index == 103) {
             game_state.prev_flipped_tile_index = i;
           } else {
             game_state.current_flipped_tile_index = i;
+            flip_timer = 0.5f;
           }
         }
       }
@@ -249,17 +238,6 @@ int main(void) {
     DrawText(score, 20 * scale, scale, font_size, YELLOW);
     const char *level = TextFormat("Level: %i", game_state.level);
     DrawText(level, 20 * scale, 20 * scale, font_size, YELLOW);
-    if (DEBUG) {
-      const char *faceup_tile_count =
-          TextFormat("FaceUp Count: %i", game_state.faceup_tile_count);
-      DrawText(faceup_tile_count, 20 * scale, 40 * scale, font_size, YELLOW);
-      const char *prev =
-          TextFormat("Prev: %i", game_state.prev_flipped_tile_index);
-      DrawText(prev, 20 * scale, 60 * scale, font_size, YELLOW);
-      const char *current =
-          TextFormat("Curr: %i", game_state.current_flipped_tile_index);
-      DrawText(current, 20 * scale, 80 * scale, font_size, YELLOW);
-    }
 
     EndDrawing();
   }
