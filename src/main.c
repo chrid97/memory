@@ -113,8 +113,39 @@ int main(void) {
 
   // (TODO) Move this into game_state
   Entity tiles[MAX_TILES];
-  int tiles_count = 2 * game_state.level;
-  update_level(tiles, tiles_count);
+  int tiles_count = 9;
+  // update_level(tiles, tiles_count);
+
+  // tile grid
+  // width, height for tile container
+  // tile gap
+
+  int grid_width = VIRTUAL_WIDTH / 2;
+  int grid_height = 375;
+  Vector2 grid_pos = {.x = (VIRTUAL_WIDTH / 2.0f - grid_width / 2.0f),
+                      .y = (VIRTUAL_HEIGHT / 2.0f - grid_height / 2.0f)};
+
+  int gap = 25;
+  int row_length = grid_width - gap - TILE_WIDTH;
+  int cols = row_length / TILE_WIDTH;
+
+  int column_length = grid_height - gap - TILE_HEIGHT;
+  int rows = column_length / TILE_HEIGHT;
+
+  printf("cols %i\n", cols);
+  printf("rows %i\n", rows);
+
+  for (int i = 0; i < tiles_count; i++) {
+    int row = 0;
+    int col = 0;
+    if (i % 3 == 0) {
+    }
+    tiles[i] = (Entity){.pos = {.x = grid_pos.x + ((gap + TILE_WIDTH) * i),
+                                .y = grid_pos.y + gap},
+                        .width = TILE_WIDTH,
+                        .height = TILE_HEIGHT,
+                        .state = FaceDown};
+  }
 
   float flip_timer = 0.0f;
   while (!WindowShouldClose()) {
@@ -140,14 +171,12 @@ int main(void) {
 
     if (flip_timer > 0) {
       flip_timer -= dt;
-      printf("%f\n", flip_timer);
       if (flip_timer <= 0) {
         flip_timer = 0;
       }
     }
 
     // compare cards
-    printf("%f\n", flip_timer);
     if (game_state.current_flipped_tile_index != 103 && flip_timer == 0) {
       char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
       char *current_tile =
@@ -176,7 +205,7 @@ int main(void) {
       tiles_count = 2 * game_state.level;
       game_state.state = PLAYING;
       game_state.score = 0;
-      update_level(tiles, tiles_count);
+      // update_level(tiles, tiles_count);
     }
 
     // (TODO) Prevent clicking on a tile when you have two flip already
@@ -211,7 +240,7 @@ int main(void) {
     if (all_tiles_scored) {
       game_state.level++;
       tiles_count = 2 * game_state.level;
-      update_level(tiles, tiles_count);
+      // update_level(tiles, tiles_count);
       all_tiles_scored = false;
     }
 
@@ -220,6 +249,9 @@ int main(void) {
     // ---------------- //
     BeginDrawing();
     ClearBackground(DARKBLUE);
+
+    DrawRectangle(grid_pos.x * scale, grid_pos.y * scale, grid_width * scale,
+                  grid_height * scale, PURPLE);
 
     for (int i = 0; i < tiles_count; i++) {
       draw_tile(&tiles[i], scale);

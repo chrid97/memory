@@ -11,7 +11,6 @@ typedef struct {
   float height;
   float width;
   Vector2 pos;
-  int card_value;
   TileState state;
   char tile_value[32];
 } Entity;
