@@ -13,7 +13,9 @@
 #define VIRTUAL_HEIGHT 450
 #define TILE_WIDTH 85
 #define TILE_HEIGHT 100
-#define DEFAULT_PLAYER_HEALTH 5
+#define DEFAULT_PLAYER_MOVES 5
+// (NOTE) MAYBE WANT THIS TO BE A CONSTANT SIZE OR AT LEAST HAVE A MIN SiZE
+#define SIDEBAR_WIDTH VIRTUAL_WIDTH / 5
 
 bool DEBUG = 0;
 
@@ -65,7 +67,7 @@ int main(void) {
   GameState game_state = {.prev_flipped_tile_index = 103,
                           .current_flipped_tile_index = 103,
                           .level = 1,
-                          .player_health = DEFAULT_PLAYER_HEALTH,
+                          .moves = DEFAULT_PLAYER_MOVES,
                           .state = PLAYING};
 
   // (TODO) Move this into game_state
@@ -76,12 +78,12 @@ int main(void) {
   for (int i = 0; i < tiles_count; i++) {
     int row = i / cols;
     int col = i % cols;
-
-    tiles[i] = (Entity){.pos = {.x = ((gap + TILE_WIDTH) * col),
-                                .y = ((TILE_HEIGHT + gap) * row)},
-                        .width = TILE_WIDTH,
-                        .height = TILE_HEIGHT,
-                        .state = FaceDown};
+    tiles[i] =
+        (Entity){.pos = {.x = (float)SIDEBAR_WIDTH + ((TILE_WIDTH + gap) * col),
+                         .y = (TILE_HEIGHT + gap) * row},
+                 .width = TILE_WIDTH,
+                 .height = TILE_HEIGHT,
+                 .state = FaceDown};
   }
 
   float flip_timer = 0.0f;
@@ -125,19 +127,19 @@ int main(void) {
       } else {
         tiles[game_state.prev_flipped_tile_index].state = FaceDown;
         tiles[game_state.current_flipped_tile_index].state = FaceDown;
-        game_state.player_health--;
+        game_state.moves--;
       }
       game_state.prev_flipped_tile_index = 103;
       game_state.current_flipped_tile_index = 103;
     }
 
-    if (game_state.player_health == 0) {
+    if (game_state.moves == 0) {
       game_state.state = GAME_OVER;
     }
 
     if (game_state.state == GAME_OVER) {
       // RESET THE GAME
-      game_state.player_health = DEFAULT_PLAYER_HEALTH;
+      game_state.moves = DEFAULT_PLAYER_MOVES;
       game_state.level = 1;
       tiles_count = 2 * game_state.level;
       game_state.state = PLAYING;
@@ -187,23 +189,21 @@ int main(void) {
     BeginDrawing();
     ClearBackground(DARKBLUE);
 
+    // Sidebar
+    Color grey = {68, 68, 78, 255};
+    DrawRectangle(0, 0, (float)SIDEBAR_WIDTH * scale, screen_height, grey);
+
     for (int i = 0; i < tiles_count; i++) {
       draw_tile(&tiles[i], scale);
     }
 
-    int health_container_width = 15 * scale;
-    int health_container_height = 15 * scale;
-    for (int i = 0; i < game_state.player_health; i++) {
-      DrawRectangle((300 + health_container_width * i) * scale, 10 * scale,
-                    health_container_width, health_container_width, RED);
-    }
-
-    // DEBUG //
     int font_size = 25 * scale;
     const char *score = TextFormat("Score: %i", game_state.score);
-    DrawText(score, 20 * scale, scale, font_size, YELLOW);
+    DrawText(score, 0, scale, font_size, YELLOW);
     const char *level = TextFormat("Level: %i", game_state.level);
-    DrawText(level, 20 * scale, 20 * scale, font_size, YELLOW);
+    DrawText(level, 0, 30 * scale, font_size, YELLOW);
+    const char *player_moves = TextFormat("Moves: %i", game_state.moves);
+    DrawText(player_moves, 0, 60 * scale, font_size, YELLOW);
 
     EndDrawing();
   }
