@@ -25,43 +25,8 @@ void test(char *text) {
 
 int random_between(int min, int max) { return min + rand() % (max - min + 1); }
 
-void draw_tile(Entity *tile, float scale) {
-  const char *text;
-  if (tile->state == FaceUp || tile->state == Scored) {
-    text = tile->tile_value;
-  } else {
-    text = "?";
-  }
-  int font_size = 90;
-  int text_width = MeasureText(text, font_size);
-  int text_height = font_size;
-  float rect_center_x = tile->pos.x + tile->width / 2.0f;
-  float rect_center_y = tile->pos.y + tile->height / 2.0f;
-  float textX = rect_center_x - text_width / 2.0f;
-  float textY = rect_center_y - text_height / 2.0f;
-  // A Scored card is a faceup card, i should probably chagne faceup to
-  // something else
-  if (tile->state == FaceUp || tile->state == Scored) {
-    DrawRectangle(tile->pos.x * scale, tile->pos.y * scale, tile->width * scale,
-                  tile->height * scale, WHITE);
-    DrawText(text, textX * scale, textY * scale, font_size * scale, ORANGE);
-  } else {
-    DrawRectangle(tile->pos.x * scale, tile->pos.y * scale, tile->width * scale,
-                  tile->height * scale, DARKGREEN);
-    DrawText(text, textX * scale, textY * scale, font_size * scale, ORANGE);
-  }
-  DrawRectangleLinesEx(
-      (Rectangle){
-          .x = tile->pos.x * scale,
-          .y = tile->pos.y * scale,
-          .width = tile->width * scale,
-          .height = tile->height * scale,
-      },
-      3, ORANGE);
-}
-
 int main(void) {
-  InitWindow(1440, 1200, "Memory");
+  InitWindow(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, "Memory");
   SetTargetFPS(60);
 
   GameState game_state = {.prev_flipped_tile_index = 103,
@@ -73,6 +38,8 @@ int main(void) {
   // (TODO) Move this into game_state
   Entity tiles[MAX_TILES];
   int tiles_count = 20;
+
+  // position tiles
   int gap = 5;
   int cols = 5;
   for (int i = 0; i < tiles_count; i++) {
@@ -113,24 +80,6 @@ int main(void) {
       if (flip_timer <= 0) {
         flip_timer = 0;
       }
-    }
-
-    // compare cards
-    if (game_state.current_flipped_tile_index != 103 && flip_timer == 0) {
-      char *prev_tile = tiles[game_state.prev_flipped_tile_index].tile_value;
-      char *current_tile =
-          tiles[game_state.current_flipped_tile_index].tile_value;
-      if (strcmp(prev_tile, current_tile) == 0) {
-        tiles[game_state.prev_flipped_tile_index].state = Scored;
-        tiles[game_state.current_flipped_tile_index].state = Scored;
-        game_state.score++;
-      } else {
-        tiles[game_state.prev_flipped_tile_index].state = FaceDown;
-        tiles[game_state.current_flipped_tile_index].state = FaceDown;
-        game_state.moves--;
-      }
-      game_state.prev_flipped_tile_index = 103;
-      game_state.current_flipped_tile_index = 103;
     }
 
     if (game_state.moves == 0) {
@@ -192,10 +141,6 @@ int main(void) {
     // Sidebar
     Color grey = {68, 68, 78, 255};
     DrawRectangle(0, 0, (float)SIDEBAR_WIDTH * scale, screen_height, grey);
-
-    for (int i = 0; i < tiles_count; i++) {
-      draw_tile(&tiles[i], scale);
-    }
 
     int font_size = 25 * scale;
     const char *score = TextFormat("Score: %i", game_state.score);

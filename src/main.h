@@ -12,7 +12,7 @@ typedef struct {
   float width;
   Vector2 pos;
   TileState state;
-  char tile_value[32];
+  int tile_id;
 } Entity;
 
 typedef struct {
