@@ -58,49 +58,6 @@ void draw_tile(Entity *tile, float scale) {
       3, ORANGE);
 }
 
-void update_level(Entity tiles[], int tiles_count) {
-  int cols = 4;
-  int tile_gap = 25;
-  int start_x = TILE_WIDTH * 2;
-  int start_y = VIRTUAL_HEIGHT / 2.0f - TILE_HEIGHT;
-
-  for (int i = 0; i < tiles_count; i++) {
-    int col = i % cols;
-    int row = i / cols;
-
-    tiles[i] = (Entity){.pos = {.x = start_x + col * (TILE_WIDTH + tile_gap),
-                                .y = start_y + row * (TILE_HEIGHT + tile_gap)},
-                        .width = TILE_WIDTH,
-                        .height = TILE_HEIGHT,
-                        .state = FaceDown};
-
-    snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", i % 2);
-  }
-
-  int pairs = tiles_count / 2;
-  int values[tiles_count];
-
-  // fill with pairs
-  for (int i = 0; i < pairs; i++) {
-    values[2 * i] = i;
-    values[2 * i + 1] = i;
-  }
-
-  // shuffle
-  srand(time(NULL));
-  for (int i = tiles_count - 1; i > 0; i--) {
-    int j = rand() % (i + 1);
-    int tmp = values[i];
-    values[i] = values[j];
-    values[j] = tmp;
-  }
-
-  // assign to tiles
-  for (int i = 0; i < tiles_count; i++) {
-    snprintf(tiles[i].tile_value, sizeof(tiles[i].tile_value), "%d", values[i]);
-  }
-}
-
 int main(void) {
   InitWindow(1440, 1200, "Memory");
   SetTargetFPS(60);
@@ -113,26 +70,15 @@ int main(void) {
 
   // (TODO) Move this into game_state
   Entity tiles[MAX_TILES];
-  int tiles_count = 9;
-
-  int grid_width = VIRTUAL_WIDTH / 2;
-  int grid_height = 375;
-  Vector2 grid_pos = {.x = (VIRTUAL_WIDTH / 2.0f - grid_width / 2.0f),
-                      .y = (VIRTUAL_HEIGHT / 2.0f - grid_height / 2.0f)};
-
-  int gap = 25;
-  int row_length = grid_width - gap - TILE_WIDTH;
-  int cols = row_length / TILE_WIDTH;
-
-  int column_length = grid_height - gap - TILE_HEIGHT;
-  int rows = column_length / TILE_HEIGHT;
-
+  int tiles_count = 20;
+  int gap = 5;
+  int cols = 5;
   for (int i = 0; i < tiles_count; i++) {
     int row = i / cols;
     int col = i % cols;
 
-    tiles[i] = (Entity){.pos = {.x = grid_pos.x + ((gap + TILE_WIDTH) * col),
-                                .y = grid_pos.y + ((TILE_HEIGHT + gap) * row)},
+    tiles[i] = (Entity){.pos = {.x = ((gap + TILE_WIDTH) * col),
+                                .y = ((TILE_HEIGHT + gap) * row)},
                         .width = TILE_WIDTH,
                         .height = TILE_HEIGHT,
                         .state = FaceDown};
@@ -240,9 +186,6 @@ int main(void) {
     // ---------------- //
     BeginDrawing();
     ClearBackground(DARKBLUE);
-
-    DrawRectangle(grid_pos.x * scale, grid_pos.y * scale, grid_width * scale,
-                  grid_height * scale, PURPLE);
 
     for (int i = 0; i < tiles_count; i++) {
       draw_tile(&tiles[i], scale);
