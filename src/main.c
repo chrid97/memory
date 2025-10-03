@@ -5,16 +5,15 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <unistd.h>
 
 const int VIRTUAL_WIDTH = 800;
 const int VIRTUAL_HEIGHT = 450;
-const int TILE_WIDTH = 85;
-const int TILE_HEIGHT = 85;
+const int TILE_WIDTH = 70;
+const int TILE_HEIGHT = 70;
 const int DEFAULT_PLAYER_MOVES = 5;
 const int SIDEBAR_WIDTH = 200;
+const int PLAYAREA_WIDTH = VIRTUAL_WIDTH - SIDEBAR_WIDTH;
 
 bool DEBUG = 0;
 
@@ -41,15 +40,19 @@ int main(void) {
   // position tiles
   int gap = 5;
   int cols = 5;
+  // Center tiles in the play area
+  float center_x =
+      (PLAYAREA_WIDTH / 2.0f) - ((TILE_WIDTH * 2.0f) + (TILE_WIDTH / 2.0f));
+  float center_y = (VIRTUAL_HEIGHT / 2.0f) - (TILE_HEIGHT * 2.0f);
   for (int i = 0; i < tiles_count; i++) {
     int row = i / cols;
     int col = i % cols;
-    tiles[i] =
-        (Entity){.pos = {.x = (float)SIDEBAR_WIDTH + ((TILE_WIDTH + gap) * col),
-                         .y = (TILE_HEIGHT + gap) * row},
-                 .width = TILE_WIDTH,
-                 .height = TILE_HEIGHT,
-                 .state = FaceDown};
+    int x = (float)SIDEBAR_WIDTH + ((TILE_WIDTH + gap) * col);
+    int y = (TILE_HEIGHT + gap) * row;
+    tiles[i] = (Entity){.pos = {.x = x + center_x, .y = y + center_y},
+                        .width = TILE_WIDTH,
+                        .height = TILE_HEIGHT,
+                        .state = FaceDown};
   }
 
   float flip_timer = 0.0f;
