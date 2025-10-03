@@ -9,13 +9,12 @@
 #include <time.h>
 #include <unistd.h>
 
-#define VIRTUAL_WIDTH 800
-#define VIRTUAL_HEIGHT 450
-#define TILE_WIDTH 85
-#define TILE_HEIGHT 100
-#define DEFAULT_PLAYER_MOVES 5
-// (NOTE) MAYBE WANT THIS TO BE A CONSTANT SIZE OR AT LEAST HAVE A MIN SiZE
-#define SIDEBAR_WIDTH VIRTUAL_WIDTH / 5
+const int VIRTUAL_WIDTH = 800;
+const int VIRTUAL_HEIGHT = 450;
+const int TILE_WIDTH = 85;
+const int TILE_HEIGHT = 85;
+const int DEFAULT_PLAYER_MOVES = 5;
+const int SIDEBAR_WIDTH = 200;
 
 bool DEBUG = 0;
 
@@ -90,7 +89,6 @@ int main(void) {
       // RESET THE GAME
       game_state.moves = DEFAULT_PLAYER_MOVES;
       game_state.level = 1;
-      tiles_count = 2 * game_state.level;
       game_state.state = PLAYING;
       game_state.score = 0;
       // update_level(tiles, tiles_count);
@@ -127,7 +125,6 @@ int main(void) {
 
     if (all_tiles_scored) {
       game_state.level++;
-      tiles_count = 2 * game_state.level;
       // update_level(tiles, tiles_count);
       all_tiles_scored = false;
     }
@@ -141,6 +138,18 @@ int main(void) {
     // Sidebar
     Color grey = {68, 68, 78, 255};
     DrawRectangle(0, 0, (float)SIDEBAR_WIDTH * scale, screen_height, grey);
+
+    // Tiles
+    for (int i = 0; i < tiles_count; i++) {
+      Entity *tile = &tiles[i];
+      if (tile->state == FaceDown) {
+        DrawRectangle(tile->pos.x * scale, tile->pos.y * scale,
+                      tile->width * scale, tile->height * scale, GREEN);
+      } else {
+        DrawRectangle(tile->pos.x, tile->pos.y, tile->width, tile->height,
+                      WHITE);
+      }
+    }
 
     int font_size = 25 * scale;
     const char *score = TextFormat("Score: %i", game_state.score);
